@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["SmsBridgeModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.smsbridge.SmsBridgeModule"]
+  }
+}

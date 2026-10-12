@@ -1,0 +1,81 @@
+[
+  {
+    "id": "equitas-debit-charge",
+    "sender": "AX-EQUTAS-S",
+    "body": "INR 6.73 has been debited from Equitas A/c 2825 towards SMS ALRT CHGS+GST:300926/263641980 on 02-10-26. Avl Bal is INR 94.45.",
+    "receivedAt": "2026-10-02T14:30:00+05:30",
+    "expected": {
+      "templateId": "equitas-debit-v1",
+      "direction": "debit",
+      "amountMinor": 673,
+      "accountLast4": "2825",
+      "reference": null,
+      "counterparty": null,
+      "description": "SMS ALRT CHGS+GST:300926/263641980",
+      "channel": "other",
+      "txnDate": "2026-10-02",
+      "balanceAfterMinor": 9445
+    }
+  },
+  {
+    "id": "equitas-credit-upi",
+    "sender": "AX-EQUTAS-S",
+    "body": "INR 2,500.00 credited via UPI to Equitas A/c 2825 -Ref:867186099240 on 11-10-26 from SANYOG NANASAH. Avl Bal is INR 3,364.45.",
+    "receivedAt": "2026-10-11T14:30:00+05:30",
+    "expected": {
+      "templateId": "equitas-credit-v1",
+      "direction": "credit",
+      "amountMinor": 250000,
+      "accountLast4": "2825",
+      "reference": "867186099240",
+      "counterparty": "SANYOG NANASAH",
+      "description": null,
+      "channel": "upi",
+      "txnDate": "2026-10-11",
+      "balanceAfterMinor": 336445
+    }
+  },
+  {
+    "id": "equitas-debit-upi",
+    "sender": "AX-EQUTAS-S",
+    "body": "INR 30.00 debited from Equitas-2825 via UPI -Ref:627951725402 to Vikas Munshilal on 06-10-26.Bal INR 864.45.Not U?SMS BLOCK UPI to 7045030000",
+    "receivedAt": "2026-10-06T14:30:00+05:30",
+    "expected": {
+      "templateId": "equitas-debit-v1",
+      "direction": "debit",
+      "amountMinor": 3000,
+      "accountLast4": "2825",
+      "reference": "627951725402",
+      "counterparty": "Vikas Munshilal",
+      "description": null,
+      "channel": "upi",
+      "txnDate": "2026-10-06",
+      "balanceAfterMinor": 86445
+    }
+  },
+  {
+    "id": "otp-ignore",
+    "sender": "JD-OTPSMS-S",
+    "body": "Your OTP for login is 482913. Do not share it with anyone. It will expire in 10 minutes. -HDFC Bank",
+    "receivedAt": "2026-10-07T14:30:00+05:30",
+    "expected": "ignored"
+  },
+  {
+    "id": "hdfc-generic-debit",
+    "sender": "AX-HDFCBK-S",
+    "body": "Rs. 850.00 spent on HDFC Card XX1234 on 08-10-26. Avl Bal Rs. 45,210.10.",
+    "receivedAt": "2026-10-08T14:30:00+05:30",
+    "expected": {
+      "templateId": "generic-v1",
+      "direction": "debit",
+      "amountMinor": 85000,
+      "accountLast4": "1234",
+      "reference": null,
+      "counterparty": null,
+      "description": null,
+      "channel": "other",
+      "txnDate": "2026-10-08",
+      "balanceAfterMinor": 4521010
+    }
+  }
+]
