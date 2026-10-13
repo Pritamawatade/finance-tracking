@@ -109,17 +109,17 @@ export default function Settings() {
 
       <Text style={[styles.h, { color: t.text }]}>Manage</Text>
       <Link href="/categories" asChild>
-        <Pressable style={[styles.link, { borderColor: t.border }]}>
+        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
           <Text style={{ color: t.text }}>Categories →</Text>
         </Pressable>
       </Link>
       <Link href="/accounts" asChild>
-        <Pressable style={[styles.link, { borderColor: t.border }]}>
+        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
           <Text style={{ color: t.text }}>Accounts →</Text>
         </Pressable>
       </Link>
       <Link href="/debug/unparsed" asChild>
-        <Pressable style={[styles.link, { borderColor: t.border }]}>
+        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
           <Text style={{ color: t.text }}>Unparsed messages →</Text>
         </Pressable>
       </Link>

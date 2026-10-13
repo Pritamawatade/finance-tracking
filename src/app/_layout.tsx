@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppState, Platform, useColorScheme } from 'react-native';
+import { ActivityIndicator, AppState, Platform, Text, View, useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,6 +20,11 @@ import { syncOnAppOpen } from '../services/smsSync';
 import { getSetting, setSetting } from '../repositories/settings';
 import { rescheduleMonthEnd } from '../services/monthEnd';
 import { getBridge } from '../services/bridge';
+
+// Module-level DB handles: useMigrations must run on a stable drizzle
+// instance, and opening the DB per render leaks connections.
+const expoDb = openDatabaseSync('finance.db');
+const migDb = drizzle(expoDb);
 
 async function bootstrapSmsSync(): Promise<void> {
   if (Platform.OS !== 'android') return;
@@ -94,9 +99,8 @@ export default function RootLayout() {
   const scheme = useColorScheme();
   const [ready, setReady] = useState(false);
 
-  // Migration gate: useMigrations needs its own drizzle handle.
-  const expoDb = openDatabaseSync('finance.db');
-  const migDb = drizzle(expoDb);
+  // Migration gate: useMigrations needs its own drizzle handle (module-level
+  // so we don't reopen the DB on every render).
   const { success, error } = useMigrations(migDb, migrations);
 
   // Migration gate + seed + SMS sync bootstrap (fetch-on-mount pattern).
@@ -134,7 +138,24 @@ export default function RootLayout() {
     };
   }, [ready]);
 
-  void error;
+  if (error) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <Text>Database migration failed: {String((error as Error)?.message ?? error)}</Text>
+      </View>
+    );
+  }
+
+  // Gate ALL screens on migrations + seed: queries must never run against
+  // an empty DB (see "no such table" crash). `ready` flips after seeding.
+  if (!success || !ready) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12 }}>Preparing your ledger…</Text>
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

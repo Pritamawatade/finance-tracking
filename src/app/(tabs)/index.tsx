@@ -99,7 +99,7 @@ export default function Home() {
 
       {pending > 0 && (
         <Link href="/review" asChild>
-          <Pressable style={[styles.banner, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }]}>
+          <Pressable style={StyleSheet.flatten([styles.banner, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }])}>
             <Text style={styles.bannerText}>Needs review ({pending}) →</Text>
           </Pressable>
         </Link>
