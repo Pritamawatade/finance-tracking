@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/db/client';
@@ -10,6 +10,8 @@ import { upsertMerchantRule } from '@/repositories/rules';
 import { normalizeCounterparty } from '@/services/ingest';
 import { useAppTheme } from '@/theme/useTheme';
 import { CategoryChip } from '@/components/ui/CategoryChip';
+import { Screen } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { parseAmountSafe, formatINR } from '@/utils/money';
 import { getBridge } from '@/services/bridge';
 
@@ -82,7 +84,7 @@ export default function ReviewDetail() {
   };
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen contentStyle={{ backgroundColor: t.background }}>
       <Text style={[styles.h, { color: t.text }]}>Categorize</Text>
       {txn ? (
         <Text style={[styles.amt, { color: dir === 'debit' ? t.danger : t.success }]}>
@@ -103,21 +105,27 @@ export default function ReviewDetail() {
       <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="Leave blank to keep" placeholderTextColor={t.textMuted} style={[styles.input, { borderColor: t.border, color: t.text }]} />
       {err ? <Text style={{ color: t.danger }}>{err}</Text> : null}
       <View style={{ height: 12 }} />
-      <Button title="Save" onPress={() => save('confirmed')} />
+      <AppButton title="Save" onPress={() => save('confirmed')} />
       <View style={{ height: 8 }} />
-      <Pressable onPress={() => save('ignored')}>
+      <Pressable
+        onPress={() => save('ignored')}
+        accessibilityRole="button"
+        accessibilityLabel="Ignore transaction"
+        hitSlop={12}
+        style={styles.ignoreBtn}
+      >
         <Text style={{ color: t.textMuted, textAlign: 'center' }}>Ignore</Text>
       </Pressable>
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16 },
   h: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
   amt: { fontSize: 20, fontWeight: '800', fontVariant: ['tabular-nums'], marginBottom: 8 },
   sms: { fontSize: 12, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: 8 },
   lbl: { fontWeight: '700', marginTop: 8 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 10, marginTop: 4 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, marginTop: 4, minHeight: 44 },
+  ignoreBtn: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

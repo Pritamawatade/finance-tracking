@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { getDb } from '@/db/client';
 import { listAccounts } from '@/repositories/accounts';
@@ -9,6 +9,8 @@ import { getSetting, setSetting } from '@/repositories/settings';
 import { parseAmountSafe } from '@/utils/money';
 import { useAppTheme } from '@/theme/useTheme';
 import { CategoryChip } from '@/components/ui/CategoryChip';
+import { Screen } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 
 function todayLocal(): string {
   const d = new Date();
@@ -88,7 +90,7 @@ export default function NewTransaction() {
   };
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen contentStyle={{ backgroundColor: t.background }}>
       <TextInput
         value={amount}
         onChangeText={setAmount}
@@ -102,6 +104,8 @@ export default function NewTransaction() {
           <Pressable
             key={d}
             onPress={() => { setDirection(d); setCategoryId(null); }}
+            accessibilityRole="button"
+            accessibilityLabel={d === 'debit' ? 'Spent' : 'Received'}
             style={[styles.toggle, { backgroundColor: direction === d ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: direction === d ? '#fff' : t.text, fontWeight: '700' }}>
@@ -130,6 +134,8 @@ export default function NewTransaction() {
           <Pressable
             key={a.id}
             onPress={() => setAccountId(a.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Account ${a.name}`}
             style={[styles.acct, { backgroundColor: acct === a.id ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: acct === a.id ? '#fff' : t.text }}>{a.name}</Text>
@@ -140,20 +146,19 @@ export default function NewTransaction() {
       <TextInput value={note} onChangeText={setNote} style={[styles.input, { borderColor: t.border, color: t.text }]} />
       {err ? <Text style={{ color: t.danger }}>{err}</Text> : null}
       <View style={{ height: 8 }} />
-      <Button title="Save" onPress={() => save(false)} />
+      <AppButton title="Save" onPress={() => save(false)} />
       <View style={{ height: 8 }} />
-      <Button title="Save & add another" onPress={() => save(true)} />
-    </ScrollView>
+      <AppButton title="Save & add another" onPress={() => save(true)} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16 },
   amount: { fontSize: 40, fontWeight: '800', borderBottomWidth: 1, marginBottom: 12, fontVariant: ['tabular-nums'] },
   toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  toggle: { flex: 1, borderRadius: 10, padding: 12, alignItems: 'center' },
+  toggle: { flex: 1, borderRadius: 10, padding: 12, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
   lbl: { fontWeight: '700', marginTop: 12, marginBottom: 6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap' },
-  input: { borderWidth: 1, borderRadius: 8, padding: 10 },
-  acct: { borderRadius: 9999, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8, marginBottom: 8 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, minHeight: 44 },
+  acct: { borderRadius: 9999, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8, marginBottom: 8, minHeight: 44, justifyContent: 'center' },
 });

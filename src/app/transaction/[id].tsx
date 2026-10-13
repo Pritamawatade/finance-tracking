@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getDb } from '@/db/client';
 import { listAccounts } from '@/repositories/accounts';
@@ -8,6 +8,8 @@ import { deleteTransaction, getTransaction, updateTransaction } from '@/reposito
 import { parseAmountSafe, formatINR } from '@/utils/money';
 import { useAppTheme } from '@/theme/useTheme';
 import { CategoryChip } from '@/components/ui/CategoryChip';
+import { Screen, ScreenView } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 
 export default function TransactionDetail() {
   const t = useAppTheme();
@@ -36,9 +38,9 @@ export default function TransactionDetail() {
 
   if (!txn) {
     return (
-      <View style={[styles.wrap, { backgroundColor: t.background }]}>
+      <ScreenView edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
         <Text style={{ color: t.text }}>Transaction not found.</Text>
-      </View>
+      </ScreenView>
     );
   }
 
@@ -76,7 +78,7 @@ export default function TransactionDetail() {
   );
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
       <Text style={[styles.amt, { color: txn.direction === 'debit' ? t.danger : t.success }]}>
         {txn.direction === 'debit' ? '−' : '+'}₹{formatINR(txn.amountMinor)}
       </Text>
@@ -89,9 +91,9 @@ export default function TransactionDetail() {
       {!editing ? (
         <>
           <View style={{ height: 16 }} />
-          <Button title="Edit" onPress={() => { setAmount(formatINR(txn.amountMinor)); setNote(txn.note ?? ''); setCategoryId(txn.categoryId); setEditing(true); }} />
+          <AppButton title="Edit" onPress={() => { setAmount(formatINR(txn.amountMinor)); setNote(txn.note ?? ''); setCategoryId(txn.categoryId); setEditing(true); }} />
           <View style={{ height: 8 }} />
-          <Button title="Delete" color={t.danger} onPress={remove} />
+          <AppButton title="Delete" danger onPress={remove} />
         </>
       ) : (
         <>
@@ -107,21 +109,27 @@ export default function TransactionDetail() {
           <TextInput value={note} onChangeText={setNote} style={[styles.input, { borderColor: t.border, color: t.text }]} />
           {err ? <Text style={{ color: t.danger }}>{err}</Text> : null}
           <View style={{ height: 8 }} />
-          <Button title="Save" onPress={save} />
+          <AppButton title="Save" onPress={save} />
           <View style={{ height: 8 }} />
-          <Pressable onPress={() => setEditing(false)}>
+          <Pressable
+            onPress={() => setEditing(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel editing"
+            hitSlop={12}
+            style={styles.cancelBtn}
+          >
             <Text style={{ color: t.primary }}>Cancel</Text>
           </Pressable>
         </>
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16 },
   amt: { fontSize: 32, fontWeight: '800', fontVariant: ['tabular-nums'] },
   lbl: { fontWeight: '700', marginTop: 12, marginBottom: 6 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 10 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, minHeight: 44 },
   chips: { flexDirection: 'row', flexWrap: 'wrap' },
+  cancelBtn: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 },
 });

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getDb } from '@/db/client';
 import { listCategories } from '@/repositories/categories';
@@ -21,6 +22,7 @@ import { Bars } from '@/components/charts/Bars';
 import { Trend } from '@/components/charts/Trend';
 import { TransactionRow } from '@/components/transaction/TransactionRow';
 import { listTransactions } from '@/repositories/transactions';
+import { Screen } from '@/components/ui/Screen';
 import { formatINR } from '@/utils/money';
 
 function pad(n: number): string {
@@ -113,9 +115,9 @@ export default function Insights() {
 
   if (!data) {
     return (
-      <View style={[styles.wrap, { backgroundColor: t.background }]}>
+      <Screen contentStyle={{ backgroundColor: t.background }}>
         <Text style={{ color: t.textMuted }}>Loading…</Text>
-      </View>
+      </Screen>
     );
   }
 
@@ -134,12 +136,14 @@ export default function Insights() {
       : 0;
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen contentStyle={{ backgroundColor: t.background }}>
       <View style={styles.seg}>
         {(['week', 'month', 'year'] as const).map((m) => (
           <Pressable
             key={m}
             onPress={() => setMode(m)}
+            accessibilityRole="button"
+            accessibilityLabel={`${m} range`}
             style={[styles.segBtn, { backgroundColor: mode === m ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: mode === m ? '#fff' : t.text, fontWeight: '700' }}>
@@ -149,14 +153,32 @@ export default function Insights() {
         ))}
       </View>
       <View style={styles.nav}>
-        <Pressable onPress={() => setAnchor((a) => shiftAnchor(mode, a, -1))}>
-          <Text style={[styles.chev, { color: t.primary }]}>‹</Text>
+        <Pressable
+          onPress={() => setAnchor((a) => shiftAnchor(mode, a, -1))}
+          accessibilityRole="button"
+          accessibilityLabel="Previous period"
+          hitSlop={12}
+          style={styles.chevBtn}
+        >
+          <Ionicons name="chevron-back" size={26} color={t.primary} />
         </Pressable>
         <Text style={[styles.label, { color: t.text }]}>{label}</Text>
-        <Pressable onPress={() => setAnchor((a) => shiftAnchor(mode, a, 1))}>
-          <Text style={[styles.chev, { color: t.primary }]}>›</Text>
+        <Pressable
+          onPress={() => setAnchor((a) => shiftAnchor(mode, a, 1))}
+          accessibilityRole="button"
+          accessibilityLabel="Next period"
+          hitSlop={12}
+          style={styles.chevBtn}
+        >
+          <Ionicons name="chevron-forward" size={26} color={t.primary} />
         </Pressable>
-        <Pressable onPress={() => setAnchor(todayAnchor())}>
+        <Pressable
+          onPress={() => setAnchor(todayAnchor())}
+          accessibilityRole="button"
+          accessibilityLabel="Go to today"
+          hitSlop={12}
+          style={styles.todayBtn}
+        >
           <Text style={{ color: t.primary }}>Today</Text>
         </Pressable>
       </View>
@@ -192,6 +214,8 @@ export default function Insights() {
           <Pressable
             key={d}
             onPress={() => setDir(d)}
+            accessibilityRole="button"
+            accessibilityLabel={`Show ${d === 'debit' ? 'spent' : 'received'}`}
             style={[styles.segBtn, { backgroundColor: dir === d ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: dir === d ? '#fff' : t.text, fontWeight: '700' }}>
@@ -228,16 +252,16 @@ export default function Insights() {
         />
       ))}
       <View style={{ height: 24 }} />
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   seg: { flexDirection: 'row', gap: 8, marginVertical: 8 },
-  segBtn: { flex: 1, borderRadius: 10, padding: 10, alignItems: 'center' },
+  segBtn: { flex: 1, borderRadius: 10, padding: 10, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 8 },
-  chev: { fontSize: 28, fontWeight: '700', paddingHorizontal: 8 },
+  chevBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  todayBtn: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 16, fontWeight: '800', flex: 1 },
   sumRow: { flexDirection: 'row', gap: 8, marginVertical: 8 },
   sumCell: { flex: 1 },

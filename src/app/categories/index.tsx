@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getDb } from '@/db/client';
 import {
   archiveCategory,
@@ -10,6 +10,8 @@ import {
 } from '@/repositories/categories';
 import { useUiStore } from '@/store/uiStore';
 import { useAppTheme } from '@/theme/useTheme';
+import { Screen } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { categoryColors } from '@/theme/tokens';
 
 export default function CategoriesScreen() {
@@ -49,7 +51,7 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
       <Text style={[styles.h, { color: t.text }]}>Add category</Text>
       <TextInput
         value={name}
@@ -63,15 +65,25 @@ export default function CategoriesScreen() {
           <Pressable
             key={k}
             onPress={() => setKind(k)}
+            accessibilityRole="button"
+            accessibilityLabel={`Category kind ${k}`}
             style={[styles.kind, { backgroundColor: kind === k ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: kind === k ? '#fff' : t.text }}>{k}</Text>
           </Pressable>
         ))}
-        <Button title="Add" onPress={add} />
+        <View style={styles.addBtn}>
+          <AppButton title="Add" onPress={add} />
+        </View>
       </View>
       {err ? <Text style={{ color: t.danger }}>{err}</Text> : null}
-      <Pressable onPress={() => setShowArchived((s) => !s)}>
+      <Pressable
+        onPress={() => setShowArchived((s) => !s)}
+        accessibilityRole="button"
+        accessibilityLabel={showArchived ? 'Hide archived' : 'Show archived'}
+        hitSlop={12}
+        style={styles.toggleArchived}
+      >
         <Text style={{ color: t.primary }}>{showArchived ? 'Hide archived' : 'Show archived'}</Text>
       </Pressable>
       {cats.map((c) => (
@@ -97,12 +109,22 @@ export default function CategoriesScreen() {
                   },
                 ]);
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Archive ${c.name}`}
+              hitSlop={12}
+              style={styles.rowBtn}
             >
               <Text style={{ color: t.danger }}>Archive</Text>
             </Pressable>
           )}
           {c.isArchived === 1 && (
-            <Pressable onPress={() => { try { unarchiveCategory(getDb(), c.id); } catch { /* ignore */ } }}>
+            <Pressable
+              onPress={() => { try { unarchiveCategory(getDb(), c.id); } catch { /* ignore */ } }}
+              accessibilityRole="button"
+              accessibilityLabel={`Restore ${c.name}`}
+              hitSlop={12}
+              style={styles.rowBtn}
+            >
               <Text style={{ color: t.primary }}>Restore</Text>
             </Pressable>
           )}
@@ -111,22 +133,28 @@ export default function CategoriesScreen() {
               onPress={() => {
                 try { updateCategory(getDb(), c.id, { sortOrder: c.sortOrder }); } catch { /* ignore */ }
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Reorder ${c.name}`}
+              hitSlop={12}
+              style={styles.rowBtn}
             >
               <Text />
             </Pressable>
           )}
         </View>
       ))}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   h: { fontSize: 16, fontWeight: '800', marginBottom: 8 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 8 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 8, minHeight: 44 },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
-  kind: { borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, padding: 10, marginBottom: 6 },
+  kind: { borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, minHeight: 44, justifyContent: 'center' },
+  addBtn: { flex: 1 },
+  toggleArchived: { minHeight: 44, justifyContent: 'center' },
+  rowBtn: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, padding: 10, marginBottom: 6, minHeight: 52 },
   dot: { width: 12, height: 12, borderRadius: 6 },
 });

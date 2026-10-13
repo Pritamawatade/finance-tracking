@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import {
-  Button,
   FlatList,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -15,6 +13,8 @@ import { getSetting, setSetting } from '@/repositories/settings';
 import { ingestInboxItems, type InboxItemLike } from '@/services/ingest';
 import { parseSms } from '@/services/parser/parse';
 import { useAppTheme } from '@/theme/useTheme';
+import { ScreenView } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { getBridge } from '@/services/bridge';
 
 type SenderRow = { sender: string; count: number; matches: boolean; sample: string };
@@ -30,11 +30,11 @@ function StepShell({
 }) {
   const t = useAppTheme();
   return (
-    <ScrollView contentContainerStyle={[styles.step, { backgroundColor: t.background }]}>
+    <View style={styles.step}>
       <Text style={[styles.title, { color: t.text }]}>{title}</Text>
       <Text style={[styles.body, { color: t.textMuted }]}>{body}</Text>
       {children}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -183,39 +183,40 @@ export default function Onboarding() {
   };
 
   return (
-    <View style={[styles.wrap, { backgroundColor: t.background }]}>
+    <ScreenView contentStyle={{ backgroundColor: t.background }}>
       {step === 0 && (
         <StepShell
           title="Welcome"
           body="Finance Tracker keeps everything on this phone. No accounts, no cloud — your SMS and money data never leave the device."
         >
-          <Button title="Continue" onPress={() => setStep(1)} />
+          <AppButton title="Continue" onPress={() => setStep(1)} />
         </StepShell>
       )}
       {step === 1 && (
         <StepShell
           title="Permissions"
-          body="Bank SMS detection needs SMS + notification permission. On Android 13+ sideloaded apps may need 'Allow restricted settings' first (App info → ⋮ menu)."
+          body="Bank SMS detection needs SMS + notification permission. On Android 13+ sideloaded apps may need 'Allow restricted settings' first (App info menu)."
         >
-          <Button title="Request permissions" onPress={requestPerms} />
+          <AppButton title="Request permissions" onPress={requestPerms} />
           <View style={{ height: 8 }} />
-          <Button title="Check again" onPress={checkState} />
+          <AppButton title="Check again" onPress={checkState} />
           <Text style={[styles.mono, { color: t.textMuted }]}>{sysState}</Text>
           <OpenSettingsRow />
           <View style={{ height: 8 }} />
-          <Button title="Continue" onPress={() => { void loadSenders(); setStep(2); }} />
+          <AppButton title="Continue" onPress={() => { void loadSenders(); setStep(2); }} />
         </StepShell>
       )}
       {step === 2 && (
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: t.text }]}>Pick bank senders</Text>
           <Text style={[styles.body, { color: t.textMuted }]}>
-            Senders from the last 90 days. ✓ = looks like a bank SMS.
+            Senders from the last 90 days. Check = looks like a bank SMS.
           </Text>
           {busy ? <Text>Loading…</Text> : null}
           <FlatList
             data={senders}
             keyExtractor={(r) => r.sender}
+            contentContainerStyle={{ paddingBottom: 32 }}
             renderItem={({ item }) => {
               const on = picked.includes(item.sender);
               return (
@@ -225,6 +226,9 @@ export default function Onboarding() {
                       on ? p.filter((s) => s !== item.sender) : [...p, item.sender],
                     )
                   }
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`Sender ${item.sender}`}
+                  accessibilityState={{ checked: on }}
                   style={[styles.senderRow, { borderColor: t.border }]}
                 >
                   <Text style={{ color: t.text }}>
@@ -237,16 +241,16 @@ export default function Onboarding() {
               );
             }}
           />
-          <Button title="Continue" onPress={() => setStep(3)} />
+          <AppButton title="Continue" onPress={() => setStep(3)} />
         </View>
       )}
       {step === 3 && (
         <StepShell title="Import history" body="Imported items arrive as pending in Review — no notification flood.">
-          <Button title="This month" onPress={() => void importHistory('month')} />
+          <AppButton title="This month" onPress={() => void importHistory('month')} />
           <View style={{ height: 8 }} />
-          <Button title="Last 3 months" onPress={() => void importHistory('3mo')} />
+          <AppButton title="Last 3 months" onPress={() => void importHistory('3mo')} />
           <View style={{ height: 8 }} />
-          <Button title="Skip" onPress={() => void importHistory('skip')} />
+          <AppButton title="Skip" onPress={() => void importHistory('skip')} />
           {busy ? <Text>Importing…</Text> : null}
         </StepShell>
       )}
@@ -257,7 +261,7 @@ export default function Onboarding() {
         >
           <OpenBatteryRow />
           <View style={{ height: 8 }} />
-          <Button title="Done" onPress={finish} />
+          <AppButton title="Done" onPress={finish} />
           <View style={{ height: 12 }} />
           <Link href="/(tabs)" style={{ color: t.primary }}>
             Skip to app
@@ -265,13 +269,13 @@ export default function Onboarding() {
         </StepShell>
       )}
       <GuardNote />
-    </View>
+    </ScreenView>
   );
 }
 
 function OpenSettingsRow() {
   return (
-    <Button
+    <AppButton
       title="Open app settings"
       onPress={() => {
         void (async () => (await getBridge())?.openAppSettings())();
@@ -282,7 +286,7 @@ function OpenSettingsRow() {
 
 function OpenBatteryRow() {
   return (
-    <Button
+    <AppButton
       title="Open battery settings"
       onPress={() => {
         void (async () => (await getBridge())?.openBatteryOptimizationSettings())();
@@ -297,10 +301,9 @@ function GuardNote() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16 },
-  step: { padding: 16, gap: 8 },
+  step: { gap: 8 },
   title: { fontSize: 22, fontWeight: '800', marginBottom: 8 },
   body: { fontSize: 14, marginBottom: 12 },
   mono: { fontSize: 12, marginVertical: 8 },
-  senderRow: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 8 },
+  senderRow: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 8, minHeight: 52 },
 });

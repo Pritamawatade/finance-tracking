@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getDb } from '@/db/client';
 import { listCategories } from '@/repositories/categories';
@@ -14,6 +15,8 @@ import { useUiStore } from '@/store/uiStore';
 import { useAppTheme } from '@/theme/useTheme';
 import { TransactionRow } from '@/components/transaction/TransactionRow';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ScreenView } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { formatINR } from '@/utils/money';
 
 type DayGroup = { key: string; title: string; net: number; items: Transaction[] };
@@ -129,7 +132,7 @@ export default function Transactions() {
   };
 
   return (
-    <View style={[styles.wrap, { backgroundColor: t.background }]}>
+    <ScreenView contentStyle={{ backgroundColor: t.background }}>
       <View style={styles.searchRow}>
         <TextInput
           value={query}
@@ -138,8 +141,14 @@ export default function Transactions() {
           placeholderTextColor={t.textMuted}
           style={[styles.search, { borderColor: t.border, color: t.text }]}
         />
-        <Pressable onPress={() => setShowFilters((s) => !s)} style={styles.filterBtn}>
-          <Text>🔍</Text>
+        <Pressable
+          onPress={() => setShowFilters((s) => !s)}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle filters"
+          hitSlop={12}
+          style={styles.filterBtn}
+        >
+          <Ionicons name="search" size={22} color={t.text} />
         </Pressable>
       </View>
 
@@ -151,6 +160,8 @@ export default function Transactions() {
               <Pressable
                 key={d}
                 onPress={() => setFilters({ direction: d })}
+                accessibilityRole="button"
+                accessibilityLabel={`Filter ${d}`}
                 style={[
                   styles.chip,
                   { backgroundColor: filters.direction === d ? t.primary : t.surfaceMuted },
@@ -168,6 +179,8 @@ export default function Transactions() {
               <Pressable
                 key={s}
                 onPress={() => setFilters({ source: s })}
+                accessibilityRole="button"
+                accessibilityLabel={`Source ${s}`}
                 style={[
                   styles.chip,
                   { backgroundColor: filters.source === s ? t.primary : t.surfaceMuted },
@@ -194,6 +207,8 @@ export default function Transactions() {
                           : [...filters.categoryIds, c.id],
                       })
                     }
+                    accessibilityRole="button"
+                    accessibilityLabel={`Category ${c.name}`}
                     style={[
                       styles.chip,
                       { backgroundColor: on ? t.primary : t.surfaceMuted },
@@ -206,7 +221,7 @@ export default function Transactions() {
                 );
               })}
           </View>
-          <Button
+          <AppButton
             title="Clear filters"
             onPress={() => {
               setFilters({ direction: 'all', source: 'all', categoryIds: [], accountId: null, query: '' });
@@ -219,7 +234,13 @@ export default function Transactions() {
       {undo && (
         <View style={styles.snack}>
           <Text style={{ color: '#fff' }}>Deleted</Text>
-          <Pressable onPress={doUndo}>
+          <Pressable
+            onPress={doUndo}
+            accessibilityRole="button"
+            accessibilityLabel="Undo delete"
+            hitSlop={12}
+            style={styles.undoBtn}
+          >
             <Text style={{ color: '#FBBF24', fontWeight: '700' }}>Undo</Text>
           </Pressable>
         </View>
@@ -231,6 +252,7 @@ export default function Transactions() {
         <FlashList
           data={flat}
           keyExtractor={(r) => r.key}
+          contentContainerStyle={{ paddingBottom: 32, paddingHorizontal: 16 }}
           renderItem={({ item }) => {
             if (item.kind === 'header') {
               const pos = item.net >= 0;
@@ -254,7 +276,13 @@ export default function Transactions() {
                     onPress={() => router.push(`/transaction/${item.txn.id}`)}
                   />
                 </View>
-                <Pressable onPress={() => doDelete(item.txn)} style={styles.del}>
+                <Pressable
+                  onPress={() => doDelete(item.txn)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete transaction"
+                  hitSlop={12}
+                  style={styles.del}
+                >
                   <Text style={{ color: '#fff' }}>Del</Text>
                 </Pressable>
               </View>
@@ -262,29 +290,30 @@ export default function Transactions() {
           }}
         />
       )}
-    </View>
+    </ScreenView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   searchRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  search: { flex: 1, borderWidth: 1, borderRadius: 10, padding: 10 },
-  filterBtn: { padding: 10, borderRadius: 10 },
+  search: { flex: 1, borderWidth: 1, borderRadius: 10, padding: 10, minHeight: 44 },
+  filterBtn: { padding: 10, borderRadius: 10, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   sheet: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8 },
   sheetTitle: { fontWeight: '700', marginTop: 8, marginBottom: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { borderRadius: 9999, paddingHorizontal: 12, paddingVertical: 7 },
+  chip: { borderRadius: 9999, paddingHorizontal: 12, paddingVertical: 7, minHeight: 44, justifyContent: 'center' },
   snack: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: '#111827',
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
   },
+  undoBtn: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   dayHead: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, marginBottom: 4 },
   dayTitle: { fontWeight: '800' },
   swipeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  del: { backgroundColor: '#DC2626', borderRadius: 10, padding: 12 },
+  del: { backgroundColor: '#DC2626', borderRadius: 10, padding: 12, minHeight: 44, justifyContent: 'center' },
 });

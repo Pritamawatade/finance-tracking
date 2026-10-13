@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getDb } from '@/db/client';
 import {
@@ -14,6 +14,7 @@ import { useUiStore } from '@/store/uiStore';
 import { useAppTheme } from '@/theme/useTheme';
 import { StatCard } from '@/components/ui/StatCard';
 import { Donut } from '@/components/charts/Donut';
+import { Screen, ScreenView } from '@/components/ui/Screen';
 import { formatINR } from '@/utils/money';
 
 export default function MonthSummary() {
@@ -41,9 +42,9 @@ export default function MonthSummary() {
 
   if (!data) {
     return (
-      <View style={[styles.wrap, { backgroundColor: t.background }]}>
+      <ScreenView edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
         <Text style={{ color: t.textMuted }}>Loading…</Text>
-      </View>
+      </ScreenView>
     );
   }
 
@@ -56,7 +57,7 @@ export default function MonthSummary() {
   const delta = data.totals.expenseMinor - data.prevTotals.expenseMinor;
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
       <Text style={[styles.title, { color: t.text }]}>{ym} summary</Text>
       <View style={styles.cards}>
         <StatCard label="Received" minor={data.totals.incomeMinor} tone="income" />
@@ -83,12 +84,11 @@ export default function MonthSummary() {
           </View>
         ))
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
   cards: { flexDirection: 'row', gap: 8, marginVertical: 8 },
   line: { fontSize: 13, marginTop: 4, fontVariant: ['tabular-nums'] },

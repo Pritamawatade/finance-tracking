@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { getDb } from '@/db/client';
 import { getAllSettings, getSetting, setSetting } from '@/repositories/settings';
 import { listTransactions, updateTransaction } from '@/repositories/transactions';
@@ -8,6 +9,8 @@ import { exportTransactionsCsv } from '@/services/exportData';
 import { rescheduleMonthEnd } from '@/services/monthEnd';
 import { useUiStore } from '@/store/uiStore';
 import { useAppTheme } from '@/theme/useTheme';
+import { Screen } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { getBridge } from '@/services/bridge';
 
 export default function Settings() {
@@ -83,17 +86,17 @@ export default function Settings() {
     (settings[key] ?? fallback) === '1';
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen contentStyle={{ backgroundColor: t.background }}>
       <Text style={[styles.h, { color: t.text }]}>SMS & notifications</Text>
       <Text style={[styles.mono, { color: t.textMuted }]}>{sys}</Text>
-      <Button title="Refresh status" onPress={() => void refresh()} />
+      <AppButton title="Refresh status" onPress={() => void refresh()} />
       <View style={{ height: 8 }} />
-      <Button
+      <AppButton
         title="Open app settings"
         onPress={() => void (async () => (await getBridge())?.openAppSettings())()}
       />
       <View style={{ height: 8 }} />
-      <Button
+      <AppButton
         title="Battery optimization settings"
         onPress={() => void (async () => (await getBridge())?.openBatteryOptimizationSettings())()}
       />
@@ -105,22 +108,37 @@ export default function Settings() {
         multiline
         style={[styles.input, { borderColor: t.border, color: t.text }]}
       />
-      <Button title="Save senders" onPress={saveSenders} />
+      <AppButton title="Save senders" onPress={saveSenders} />
 
       <Text style={[styles.h, { color: t.text }]}>Manage</Text>
       <Link href="/categories" asChild>
-        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
-          <Text style={{ color: t.text }}>Categories →</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open categories"
+          style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}
+        >
+          <Text style={{ color: t.text }}>Categories</Text>
+          <Ionicons name="chevron-forward" size={18} color={t.textMuted} />
         </Pressable>
       </Link>
       <Link href="/accounts" asChild>
-        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
-          <Text style={{ color: t.text }}>Accounts →</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open accounts"
+          style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}
+        >
+          <Text style={{ color: t.text }}>Accounts</Text>
+          <Ionicons name="chevron-forward" size={18} color={t.textMuted} />
         </Pressable>
       </Link>
       <Link href="/debug/unparsed" asChild>
-        <Pressable style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}>
-          <Text style={{ color: t.text }}>Unparsed messages →</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open unparsed messages"
+          style={StyleSheet.flatten([styles.link, { borderColor: t.border }])}
+        >
+          <Text style={{ color: t.text }}>Unparsed messages</Text>
+          <Ionicons name="chevron-forward" size={18} color={t.textMuted} />
         </Pressable>
       </Link>
 
@@ -148,6 +166,8 @@ export default function Settings() {
             onPress={() => {
               try { setSetting(getDb(), 'theme', m); } catch { /* ignore */ }
             }}
+            accessibilityRole="button"
+            accessibilityLabel={`Theme ${m}`}
             style={[styles.themeBtn, { backgroundColor: (settings['theme'] ?? 'system') === m ? t.primary : t.surfaceMuted }]}
           >
             <Text style={{ color: (settings['theme'] ?? 'system') === m ? '#fff' : t.text }}>{m}</Text>
@@ -156,10 +176,10 @@ export default function Settings() {
       </View>
 
       <Text style={[styles.h, { color: t.text }]}>Ignored items ({ignored})</Text>
-      <Button title="Restore ignored to Review" onPress={restoreIgnored} />
+      <AppButton title="Restore ignored to Review" onPress={restoreIgnored} />
 
       <Text style={[styles.h, { color: t.text }]}>Export</Text>
-      <Button
+      <AppButton
         title="Export CSV"
         onPress={() => void (async () => {
           const uri = await exportTransactionsCsv(getDb());
@@ -170,7 +190,7 @@ export default function Settings() {
       {__DEV__ && Platform.OS === 'android' && (
         <>
           <Text style={[styles.h, { color: t.text }]}>Debug</Text>
-          <Button
+          <AppButton
             title="Simulate SMS (Equitas debit)"
             onPress={() => void (async () => {
               await (await getBridge())?.debugInjectSms(
@@ -184,18 +204,17 @@ export default function Settings() {
       )}
       {msg ? <Text style={[styles.msg, { color: t.primary }]}>{msg}</Text> : null}
       <View style={{ height: 32 }} />
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   h: { fontSize: 16, fontWeight: '800', marginTop: 16, marginBottom: 8 },
   mono: { fontSize: 12, marginBottom: 8 },
   input: { borderWidth: 1, borderRadius: 8, padding: 10, minHeight: 60, marginBottom: 8 },
-  link: { borderWidth: 1, borderRadius: 10, padding: 14, marginBottom: 8 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
+  link: { borderWidth: 1, borderRadius: 10, padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52 },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, minHeight: 44 },
   themeRow: { flexDirection: 'row', gap: 8 },
-  themeBtn: { borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  themeBtn: { borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: 'center' },
   msg: { marginTop: 12 },
 });

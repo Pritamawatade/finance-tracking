@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/db/client';
@@ -12,6 +12,8 @@ import { useUiStore } from '@/store/uiStore';
 import { useAppTheme } from '@/theme/useTheme';
 import { CategoryChip } from '@/components/ui/CategoryChip';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Screen } from '@/components/ui/Screen';
+import { AppButton } from '@/components/ui/AppButton';
 import { formatINR } from '@/utils/money';
 import { getBridge } from '@/services/bridge';
 
@@ -77,22 +79,28 @@ export default function ReviewIndex() {
   const expenseCats = data.cats.filter((c) => c.kind === 'expense' && c.isArchived === 0);
 
   return (
-    <ScrollView style={[styles.wrap, { backgroundColor: t.background }]}>
+    <Screen edges={['bottom', 'left', 'right']} contentStyle={{ backgroundColor: t.background }}>
       <View style={styles.head}>
         <Text style={[styles.h, { color: t.text }]}>Pending ({data.pending.length})</Text>
-        <Pressable onPress={() => { setMulti((m) => !m); setPicked([]); }}>
+        <Pressable
+          onPress={() => { setMulti((m) => !m); setPicked([]); }}
+          accessibilityRole="button"
+          accessibilityLabel={multi ? 'Done selecting' : 'Select multiple'}
+          hitSlop={12}
+          style={styles.selectBtn}
+        >
           <Text style={{ color: t.primary }}>{multi ? 'Done' : 'Select'}</Text>
         </Pressable>
       </View>
       {multi && (
         <View style={[styles.bulk, { borderColor: t.border }]}>
-          <Text style={{ color: t.text }}>Bulk category → confirm {picked.length} items</Text>
+          <Text style={{ color: t.text }}>Bulk category: confirm {picked.length} items</Text>
           <View style={styles.chips}>
             {expenseCats.slice(0, 8).map((c) => (
               <CategoryChip key={c.id} emoji={c.icon} name={c.name} selected={bulkCat === c.id} onPress={() => setBulkCat(c.id)} />
             ))}
           </View>
-          <Button title="Confirm selected" disabled={picked.length === 0 || bulkCat == null} onPress={confirmBulk} />
+          <AppButton title="Confirm selected" disabled={picked.length === 0 || bulkCat == null} onPress={confirmBulk} />
         </View>
       )}
       {data.pending.length === 0 ? (
@@ -121,7 +129,13 @@ export default function ReviewIndex() {
                   <Text style={{ color: t.text }}>{p.counterpartyName ?? p.description ?? 'Unknown'}</Text>
                   <Text style={{ color: t.textMuted, fontSize: 12 }}>{p.localDate} · {p.source}</Text>
                 </View>
-                <Pressable onPress={() => ignore(p.id, p.smsMessageId, smsHashFor(p.smsMessageId))}>
+                <Pressable
+                  onPress={() => ignore(p.id, p.smsMessageId, smsHashFor(p.smsMessageId))}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ignore transaction"
+                  hitSlop={12}
+                  style={styles.ignoreBtn}
+                >
                   <Text style={{ color: t.textMuted }}>Ignore</Text>
                 </Pressable>
               </View>
@@ -144,7 +158,7 @@ export default function ReviewIndex() {
           );
         })
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
@@ -164,9 +178,10 @@ async function navigateToQuick(smsMessageId: number | null): Promise<void> {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 12 },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   h: { fontSize: 18, fontWeight: '800' },
+  selectBtn: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
+  ignoreBtn: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   bulk: { borderWidth: 1, borderRadius: 10, padding: 10, marginBottom: 10 },
   card: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },

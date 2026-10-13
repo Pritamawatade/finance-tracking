@@ -38,7 +38,9 @@ export function StatCard({
   return (
     <View style={[styles.card, { backgroundColor: t.card, borderColor: t.border }]}>
       <Text style={[styles.label, { color: t.textMuted }]}>{label}</Text>
-      <Text style={[styles.value, { color }]}>₹{formatINR(minor)}</Text>
+      <Text style={[styles.value, { color }]} numberOfLines={1} adjustsFontSizeToFit>
+        ₹{formatINR(minor)}
+      </Text>
     </View>
   );
 }
