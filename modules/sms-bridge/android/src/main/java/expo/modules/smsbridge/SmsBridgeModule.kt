@@ -132,7 +132,7 @@ class SmsBridgeModule : Module() {
     }
 
     Function("openAppSettings") {
-      val ctx = appContext.reactContext ?: return@Function
+      val ctx = appContext.reactContext ?: return@Function null
       val intent = Intent(
         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
         Uri.fromParts("package", ctx.packageName, null)
@@ -141,7 +141,7 @@ class SmsBridgeModule : Module() {
     }
 
     Function("openBatteryOptimizationSettings") {
-      val ctx = appContext.reactContext ?: return@Function
+      val ctx = appContext.reactContext ?: return@Function null
       try {
         val intent = Intent(
           Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,

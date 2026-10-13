@@ -11,7 +11,7 @@ import java.util.regex.Pattern
 
 /**
  * Executes ParserConfig templates. Must stay in sync with the TS parser
- * (src/services/parser/*) and spec §7. Normalization rules are identical
+ * (src/services/parser tree) and spec §7. Normalization rules are identical
  * on both sides: see normalizeKey, amountToMinor, sha256Hex, parseBodyDate.
  */
 data class ParsedTxn(
