@@ -26,6 +26,30 @@ this app needs a development build (custom native `sms-bridge` module).
    npx expo run:android
    ```
 
+   Local build prerequisites (Gradle reads `android/` which is generated —
+   `android/local.properties` is gitignored, so each machine needs this once):
+
+   - Point the SDK at a user-writable copy with licenses accepted and the
+     pinned NDK installed. The system-wide `/opt/android-sdk` has no
+     `licenses/` and no NDK, which fails with
+     `LicenceNotAcceptedException: ndk;27.1.12297006`:
+
+     ```bash
+     export ANDROID_HOME=$HOME/Android/Sdk
+     export ANDROID_SDK_ROOT=$HOME/Android/Sdk
+     ~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+     printf 'sdk.dir=%s\n' "$HOME/Android/Sdk" > android/local.properties
+     ```
+
+   - Build with JDK 17. Newer JVMs (e.g. Java 26) break the Android Gradle
+     Plugin (`JdkImageTransform` / `jlink` failure):
+
+     ```bash
+     export JAVA_HOME=$HOME/.local/share/mise/installs/java/17.0.2
+     ```
+
+     (`android/gradle.properties` also pins this via `org.gradle.java.home`.)
+
    Sideload release APK: EAS Build (`preview` profile, `buildType: apk`)
    or local `assembleRelease`. On Android 13+ (esp. 15/16) sideloaded apps
    need *Settings → Apps → (app) → ⋮ → Allow restricted settings* before
